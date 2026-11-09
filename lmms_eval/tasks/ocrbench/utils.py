@@ -1,6 +1,8 @@
 from loguru import logger
 
 from lmms_eval.tasks._task_utils.file_utils import generate_submission_file
+from lmms_eval.loggers.evaluation_tracker import GeneralConfigTracker
+from lmms_eval.utils import sanitize_model_name
 
 # Add the following functions to your existing utils.py file
 OCRBench_score = {
@@ -91,7 +93,13 @@ def ocrbench_aggregate_accuracy(results, args):
         + OCRBench_score["Non-Semantic Text Recognition"]
     )
     Final_score = recognition_score + OCRBench_score["Scene Text-centric VQA"] + OCRBench_score["Doc-oriented VQA"] + OCRBench_score["Key Information Extraction"] + OCRBench_score["Handwritten Mathematical Expression Recognition"]
-    file_name = generate_submission_file("ocrbench_results.txt", args, subpath="results")
+    
+    model_name = GeneralConfigTracker._get_model_name(args.model_args)
+    model_dir = sanitize_model_name(model_name)
+
+    file_name = generate_submission_file(
+        "ocrbench_results.txt", args, subpath=model_dir
+    )
     with open(file_name, "w") as f:
         print("######################### OCRBench #############################", file=f)
         print(f"Text Recognition(Total 300): {recognition_score}", file=f)

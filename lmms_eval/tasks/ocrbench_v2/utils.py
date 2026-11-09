@@ -34,6 +34,9 @@ from lmms_eval.tasks.ocrbench_v2.vqa_metric import (
     vqa_evaluation_case_sensitive,
 )
 
+from lmms_eval.loggers.evaluation_tracker import GeneralConfigTracker
+from lmms_eval.utils import sanitize_model_name
+
 
 def _make_score_buckets():
     return {
@@ -462,7 +465,14 @@ def ocrbench_v2_aggregate_accuracy(results, args):
     cn_count = sum(len(score_buckets[t]) for t in CHINESE_TASKS)
     total = en_count + cn_count
     Final_score = (OCRBench_v2_English_subset_score * en_count + OCRBench_v2_Chinese_subset_score * cn_count) / total if total > 0 else 0.0
-    file_name = generate_submission_file("ocrbench_v2_results.txt", args, subpath="results")
+
+    model_name = GeneralConfigTracker._get_model_name(args.model_args)
+    model_dir = sanitize_model_name(model_name)
+
+    file_name = generate_submission_file(
+        "ocrbench_v2_results.txt", args, subpath=model_dir
+    )
+    
     with open(file_name, "w") as f:
         print("######################### OCRBench v2 ##########################", file=f)
         print("################## All Question Types Scores ###################", file=f)
